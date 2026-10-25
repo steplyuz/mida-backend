@@ -46,6 +46,8 @@ def create_app(
         allow_origins=resolved.cors_origin_list,
         allow_credentials=False,
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        # Origin is the trust boundary here; authentication is a bearer token, not a cookie, so the
+        # browser/webview may send any harmless request headers. Restricting this broke Telegram clients.
         allow_headers=["*"],
         expose_headers=[REQUEST_ID_HEADER],
     )

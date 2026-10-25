@@ -21,6 +21,7 @@ from app.models.payment import Payment
 from app.models.payout import Payout
 from app.services import stats_service
 from app.services.admin_payment_service import AdminPaymentService
+from app.services.group_link_service import link_group
 from app.services.inquiry_service import InquiryService
 from app.services.payout_service import PayoutService
 from app.services.user_admin_service import UserAdminService
@@ -202,6 +203,27 @@ async def mark_payout_paid(
 ) -> dict[str, Any]:
     p = await PayoutService(session).mark_paid(admin.actor, public_id, bank_reference=body.bank_reference)
     return _payout_out(p, await _deal_public_id(session, p.deal_id))
+
+
+class LinkGroupBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    chat_id: StrictInt
+    title: str | None = Field(default=None, max_length=255)
+
+
+@router.post("/deals/{public_id}/telegram-group/link", summary="Attach a group the admin created by hand")
+async def link_deal_group(
+    public_id: str, body: LinkGroupBody, admin: AdminUserDep, session: SessionDep
+) -> dict[str, Any]:
+    deal = await link_group(
+        session, admin.actor, deal_public_id=public_id, chat_id=body.chat_id, title=body.title
+    )
+    return {
+        "deal_public_id": deal.public_id,
+        "telegram_group_status": deal.telegram_group_status.value,
+        "telegram_chat_id": deal.telegram_chat_id,
+        "telegram_chat_title": deal.telegram_chat_title,
+    }
 
 
 # ---------- users ----------
