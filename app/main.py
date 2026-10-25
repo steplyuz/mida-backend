@@ -46,7 +46,7 @@ def create_app(
         allow_origins=resolved.cors_origin_list,
         allow_credentials=False,
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-        allow_headers=["Authorization", "Content-Type", "Idempotency-Key", REQUEST_ID_HEADER],
+        allow_headers=["*"],
         expose_headers=[REQUEST_ID_HEADER],
     )
     app.add_middleware(SecurityHeadersMiddleware)
