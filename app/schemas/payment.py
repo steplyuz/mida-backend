@@ -8,6 +8,17 @@ from app.models.enums import DealPaymentStatus, PaymentStatus
 from app.models.payment import Payment
 
 
+class PaymentInstructions(BaseModel):
+    """Where and how the buyer transfers money. Only MIDA's own account is ever shown here."""
+
+    bank_name: str
+    account_number: str
+    recipient_name: str
+    reference: str
+    amount_tiyin: int
+    currency: str
+
+
 class PaymentPublic(BaseModel):
     """checkout_url is shown to the buyer only. Provider transaction ids are never exposed."""
 
@@ -18,6 +29,7 @@ class PaymentPublic(BaseModel):
     checkout_url: str | None
     created_at: datetime
     verified_at: datetime | None
+    instructions: PaymentInstructions | None = None
 
     @classmethod
     def build(cls, payment: Payment, *, is_buyer: bool) -> PaymentPublic:

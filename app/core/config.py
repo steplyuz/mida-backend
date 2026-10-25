@@ -43,6 +43,10 @@ class Settings(BaseSettings):
     mock_payment_provider: bool = False
     # Admin records bank transfers by hand; a second admin approves them.
     manual_payments: bool = False
+    # MIDA's own receiving account, shown to buyers. Set in .env on the server, never in code.
+    manual_payment_bank: str | None = Field(default=None, max_length=120)
+    manual_payment_account: str | None = Field(default=None, max_length=40)
+    manual_payment_recipient: str | None = Field(default=None, max_length=160)
 
     # MTProto admin session (group creation). The Bot API is NOT used for group creation.
     telegram_api_id: int | None = None

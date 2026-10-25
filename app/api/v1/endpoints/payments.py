@@ -17,7 +17,7 @@ from app.core.config import Settings
 from app.core.domain_errors import NotFoundError
 from app.integrations.payments.base import PaymentProvider
 from app.models.enums import DealPaymentStatus
-from app.schemas.payment import PaymentList, PaymentPublic, PaymentStatusPublic
+from app.schemas.payment import PaymentInstructions, PaymentList, PaymentPublic, PaymentStatusPublic
 from app.services.idempotency_service import validate_key
 from app.services.payment_service import PaymentService
 
@@ -61,7 +61,18 @@ async def start_payment(
     )
     if replayed:
         response.headers[REPLAY_HEADER] = "true"
-    return PaymentPublic.build(payment, is_buyer=True)
+    body = PaymentPublic.build(payment, is_buyer=True)
+    if settings.manual_payments and settings.manual_payment_bank and settings.manual_payment_account:
+        # The reference is the deal number: the buyer puts it in the transfer note so the admin can match it.
+        body.instructions = PaymentInstructions(
+            bank_name=settings.manual_payment_bank,
+            account_number=settings.manual_payment_account,
+            recipient_name=settings.manual_payment_recipient or "MIDA",
+            reference=f"MIDA {deal.deal_number}",
+            amount_tiyin=payment.amount_tiyin,
+            currency=payment.currency,
+        )
+    return body
 
 
 @router.get("/{public_id}/payments", response_model=PaymentList, summary="Payment attempts for the deal")
